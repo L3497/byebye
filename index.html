@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch Memories</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .game-container {
+      position: relative;
+      max-width: 300px;
+      margin: 0 auto;
+      padding: 1rem 0.5rem;
+      background: transparent;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      color: #D4A574;
+      margin: 0 0 0.3rem;
+      font-weight: 700;
+    }
+    
+    .header p {
+      font-size: 11px;
+      color: #8B7355;
+      margin: 0;
+    }
+    
+    .stats-bar {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 0.8rem;
+    }
+    
+    .stat-item {
+      display: inline-block;
+      margin: 0 20px;
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 9px;
+      color: #999;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+      color: #D4A574;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    
+    .catch-zone {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(135deg, #FFFACD 0%, #FFE4B5 100%);
+      border-radius: 12px;
+      border: 2px solid #D4A574;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .falling-item {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: transform 0.1s;
+    }
+    
+    .falling-item:hover {
+      transform: scale(1.15);
+    }
+    
+    .falling-item.caught {
+      opacity: 0;
+    }
+    
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      text-align: center;
+      animation: slideUp 0.4s ease;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-emoji {
+      font-size: 60px;
+      margin: 0 0 1.5rem;
+      animation: bounce 0.6s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .modal-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #D4A574;
+      margin: 0 0 1rem;
+    }
+    
+    .modal-text {
+      font-size: 16px;
+      color: #666;
+      margin: 0 0 2rem;
+      line-height: 1.6;
+    }
+    
+    .carousel-container {
+      position: relative;
+      margin: 2rem 0;
+      background: #f9f5f0;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    
+    .carousel-slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    
+    .carousel-slide.active {
+      opacity: 1;
+    }
+    
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .dot.active {
+      background: #D4A574;
+      transform: scale(1.2);
+    }
+    
+    .gift-box {
+      background: linear-gradient(135deg, #D4A574 0%, #E6C8A8 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      color: white;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+    }
+    
+    .gift-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 0.8rem;
+    }
+    
+    .gift-content {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+      background: white;
+      color: #D4A574;
+      border-radius: 8px;
+      padding: 1rem;
+      font-weight: 600;
+    }
+    
+    .farewell-message {
+      font-size: 13px;
+      color: #999;
+      margin: 2rem 0 0;
+      font-style: italic;
+    }
+    
+    .restart-btn {
+      margin-top: 1.5rem;
+      padding: 12px 30px;
+      background: #D4A574;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .restart-btn:hover {
+      background: #B8956A;
+      transform: translateY(-2px);
+    }
+    
+    .balloon {
+      position: fixed;
+      bottom: -50px;
+      font-size: 40px;
+      animation: rise linear infinite;
+      z-index: 999;
+    }
+    
+    @keyframes rise {
+      0% {
+        bottom: -50px;
+        opacity: 1;
+      }
+      100% {
+        bottom: 110vh;
+        opacity: 0;
+      }
+    }
+    
+    .balloon1 { left: 10%; animation-duration: 3s; }
+    .balloon2 { left: 20%; animation-duration: 3.5s; animation-delay: 0.2s; }
+    .balloon3 { left: 30%; animation-duration: 3s; animation-delay: 0.4s; }
+    .balloon4 { left: 40%; animation-duration: 3.2s; animation-delay: 0.1s; }
+    .balloon5 { left: 60%; animation-duration: 3.4s; animation-delay: 0.3s; }
+    .balloon6 { left: 70%; animation-duration: 3s; animation-delay: 0s; }
+    .balloon7 { left: 80%; animation-duration: 3.3s; animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="header">
+    <h1>Catch Memories</h1>
+    <p>Collect the moments! 📸</p>
+  </div>
+  
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-label">Collected</div>
+      <div class="stat-value"><span id="score">0</span>/6</div>
+    </div>
+  </div>
+  
+  <div class="catch-zone" id="catchZone"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="modal-emoji">🖼️✨</div>
+    <h2 class="modal-title">You've Collected a Memory!</h2>
+    <p class="modal-text">Thanks for all the wonderful moments together!<br>We'll miss you!</p>
+    
+    <div class="carousel-container">
+      <div class="carousel" id="carousel">
+        <div class="carousel-slide active">
+          <img src="https://raw.githubusercontent.com/L3497/byebye/main/teambild1.jpg" alt="Team Memory 1">
+        </div>
+        <div class="carousel-slide">
+          <img src="https://raw.githubusercontent.com/L3497/byebye/main/teambild2.jpg" alt="Team Memory 2">
+        </div>
+      </div>
+      <div class="carousel-dots">
+        <div class="dot active" onclick="goToSlide(0)"></div>
+        <div class="dot" onclick="goToSlide(1)"></div>
+      </div>
+    </div>
+    
+    <div class="gift-box">
+      <div class="gift-title">🎁 Your Farewell Gift</div>
+      <div class="gift-content">
+        <strong>Wunschgutschein</strong>
+        <p style="margin: 0.5rem 0 0;">For all the laughter, teamwork & wonderful memories! 🌟</p>
+      </div>
+    </div>
+    
+    <p class="farewell-message">You'll always be part of our team! 💕</p>
+    
+    <button class="restart-btn" onclick="restartGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+  const catchZone = document.getElementById('catchZone');
+  let score = 0;
+  const targetScore = 6;
+  let gameActive = true;
+  let fallingItems = [];
+  let currentSlide = 0;
+  
+  function getRandomX() {
+    const zoneRect = catchZone.getBoundingClientRect();
+    return Math.random() * (zoneRect.width - 40);
+  }
+  
+  function createFallingFrame() {
+    if (!gameActive) return;
+    
+    const frame = document.createElement('div');
+    frame.className = 'falling-item';
+    frame.textContent = '🖼️';
+    
+    const startY = -40;
+    const startX = getRandomX();
+    
+    frame.style.left = startX + 'px';
+    frame.style.top = startY + 'px';
+    
+    catchZone.appendChild(frame);
+    
+    let currentY = startY;
+    const speed = Math.random() * 1.5 + 1.5;
+    let clickable = true;
+    
+    frame.onclick = (e) => {
+      if (!clickable || !gameActive) return;
+      e.stopPropagation();
+      
+      clickable = false;
+      frame.classList.add('caught');
+      score++;
+      document.getElementById('score').textContent = score;
+      
+      setTimeout(() => frame.remove(), 300);
+      
+      if (score >= targetScore) {
+        endGame();
+      }
+    };
+    
+    const animationInterval = setInterval(() => {
+      if (!document.body.contains(frame)) {
+        clearInterval(animationInterval);
+        return;
+      }
+      
+      currentY += speed;
+      frame.style.top = currentY + 'px';
+      
+      const zoneRect = catchZone.getBoundingClientRect();
+      if (currentY > 300) {
+        clearInterval(animationInterval);
+        frame.remove();
+      }
+    }, 20);
+    
+    fallingItems.push({ element: frame, interval: animationInterval });
+  }
+  
+  function endGame() {
+    gameActive = false;
+    document.getElementById('modal').classList.add('show');
+    createBalloons();
+  }
+  
+  function restartGame() {
+    score = 0;
+    gameActive = true;
+    currentSlide = 0;
+    document.getElementById('score').textContent = '0';
+    document.getElementById('modal').classList.remove('show');
+    removeBalloons();
+    
+    fallingItems.forEach(item => {
+      clearInterval(item.interval);
+      item.element.remove();
+    });
+    fallingItems = [];
+    
+    updateCarousel();
+  }
+  
+  function goToSlide(n) {
+    currentSlide = n;
+    updateCarousel();
+  }
+  
+  function updateCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.dot');
+    
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+    
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }
+  
+  function createBalloons() {
+    const balloons = ['🖼️', '✨', '👋', '💕', '🎊', '🌸', '💝', '🎉'];
+    balloons.forEach((balloon, idx) => {
+      const el = document.createElement('div');
+      el.className = `balloon balloon${idx + 1}`;
+      el.textContent = balloon;
+      document.body.appendChild(el);
+    });
+  }
+  
+  function removeBalloons() {
+    document.querySelectorAll('.balloon').forEach(el => el.remove());
+  }
+  
+  // Start spawning frames
+  setInterval(createFallingFrame, 600);
+</script>
+
+</body>
+</html>
